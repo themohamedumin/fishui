@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import PondVessel from './PondVessel';
 import { StatusRow } from './StatusPieces';
 
 const SENSOR_STATUS_TONE = {
@@ -18,10 +17,6 @@ export default function WaterLevelPanel({ live, control = {}, updatePump }) {
   const [pendingPump, setPendingPump] = useState(null);
   const [pumpError, setPumpError] = useState('');
 
-  const full = !!live?.water_level_full;
-  const empty = !!live?.water_level_empty;
-  const aerating = !!live?.air_pump_on;
-
   const waterSensor1Status = live?.water_sensor1_status || 'NORMAL';
   const waterSensor2Status = live?.water_sensor2_status || 'NORMAL';
   const fillPumpState = !!control.fill_pump;
@@ -34,16 +29,6 @@ export default function WaterLevelPanel({ live, control = {}, updatePump }) {
       : waterSensor1Status === 'LOW' || waterSensor2Status === 'LOW'
         ? 'LOW'
         : 'NORMAL';
-
-  let fillPct = 50;
-  let levelLabel = 'OK';
-  if (full) {
-    fillPct = 100;
-    levelLabel = 'FULL';
-  } else if (empty) {
-    fillPct = 8;
-    levelLabel = 'LOW';
-  }
 
   const handlePumpToggle = async (pumpKey, targetValue) => {
     if (!updatePump) return;
@@ -76,13 +61,6 @@ export default function WaterLevelPanel({ live, control = {}, updatePump }) {
         <p className="section-sub">
           Live water sensor readings and the current automatic water state. The dashboard reflects
           the values reported by the ESP32 rather than recalculating the sensor thresholds.
-        </p>
-
-        <div className="pond-vessel-card">
-          <PondVessel fillPct={fillPct} full={full} empty={empty} aerating={aerating} />
-        </div>
-        <p style={{ textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12.5, color: 'var(--ink-dim)', margin: '2px 0 14px' }}>
-          {levelLabel} · {Math.round(fillPct)}%
         </p>
 
         <StatusRow label="Overall Water Level" value={overallWaterLevel} tone={overallWaterLevel === 'HIGH' ? 'on' : overallWaterLevel === 'LOW' ? 'warn' : undefined} />
