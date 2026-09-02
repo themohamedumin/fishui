@@ -41,7 +41,7 @@ export default function FeederPanel({ live }) {
       <div className="section-title">Automatic Fish Feeder</div>
       <p className="section-sub">
         Feeds automatically on a schedule (times below, synced via NTP), or on demand with the
-        button. The gate servo opens to 90°, holds for 3 seconds, then closes back to 0°.
+        button. The gate servo opens to 90°, holds for 15 seconds, then closes back to 0°.
       </p>
 
       <div className="feeder-row">
