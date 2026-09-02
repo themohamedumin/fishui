@@ -35,7 +35,7 @@ export default function LogsPanel({ live, connection }) {
     <>
       <div className="card">
         <div className="section-title">Sensor Trends</div>
-        <div className="chart-meta">ESP32 {connection === 'online' ? 'live' : connection} · timestamp source shown · hover a point for exact values</div>
+        <div className="chart-meta">ESP32 {connection === 'online' ? 'live' : connection} · backlog hidden · new hardware logs appear here</div>
         <div className="legend">
           <span>
             <i style={{ background: '#4f8ef7' }} />

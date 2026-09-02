@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ref, query, limitToLast, onValue } from 'firebase/database';
 import { db, DEVICE_ID } from '../firebase';
 
@@ -20,6 +20,8 @@ export function useLogs() {
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(null);
+  const baselineKeys = useRef(new Set());
+  const realtimeRows = useRef([]);
 
   const loadLogs = useCallback(() => {
     setLoading(true);
@@ -28,6 +30,7 @@ export function useLogs() {
     const unsubscribe = onValue(logsRef, (snap) => {
       const out = [];
       snap.forEach((child) => {
+        if (baselineKeys.current.has(child.key)) return;
         const value = child.val() || {};
         const valueTimestamp = Number(value.timestamp_ms ?? value.timestamp);
         const pushTimestamp = timestampFromPushKey(child.key);
@@ -40,7 +43,13 @@ export function useLogs() {
           hardware_uptime_ms: !pushTimestamp && valueTimestamp >= 0 && valueTimestamp < 1e12 ? valueTimestamp : null,
         });
       });
-      setRows(out);
+      if (!baselineKeys.current.size) {
+        snap.forEach((child) => baselineKeys.current.add(child.key));
+      } else {
+        out.forEach((row) => realtimeRows.current.push(row));
+        snap.forEach((child) => baselineKeys.current.add(child.key));
+      }
+      setRows(realtimeRows.current.slice(-50));
       setLoaded(true);
       setLoading(false);
     }, (loadError) => {
