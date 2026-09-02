@@ -69,7 +69,7 @@ export default function LogsPanel() {
               ) : (
                 displayRows.map((r, i) => (
                   <tr key={i}>
-                    <td>{new Date(r.timestamp_ms || 0).toLocaleString()}</td>
+                    <td>{new Date(r.timestamp_ms).toLocaleString()}</td>
                     <td>{(r.temperature_c ?? 0).toFixed(1)}</td>
                     <td>{(r.ph ?? 0).toFixed(2)}</td>
                     <td>{r.turbidity_adc ?? '--'}</td>

@@ -15,7 +15,16 @@ export function useLogs() {
       const logsRef = query(ref(db, `smart_fish_pond/${DEVICE_ID}/logs`), limitToLast(50));
       const snap = await get(logsRef);
       const out = [];
-      snap.forEach((child) => out.push(child.val()));
+      snap.forEach((child) => {
+        const value = child.val() || {};
+        const rawTimestamp = value.timestamp_ms ?? value.timestamp ?? child.key;
+        const timestamp = Number(rawTimestamp);
+
+        out.push({
+          ...value,
+          timestamp_ms: Number.isFinite(timestamp) && timestamp > 0 ? timestamp : Date.now(),
+        });
+      });
       setRows(out);
       setLoaded(true);
     } catch (error) {
