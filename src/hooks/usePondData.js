@@ -56,7 +56,7 @@ export function useLiveData() {
           setLive(null);
           return;
         }
-        setLive(val);
+        setLive({ ...val, _received_at_ms: Date.now() });
         setConnection('online');
         if (watchdog.current) clearTimeout(watchdog.current);
         watchdog.current = setTimeout(() => setConnection('offline'), OFFLINE_TIMEOUT_MS);

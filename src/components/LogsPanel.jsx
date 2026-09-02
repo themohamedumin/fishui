@@ -1,21 +1,30 @@
-import { useEffect } from 'react';
 import { useLogs } from '../hooks/useLogs';
 import TrendChart from './TrendChart';
 
-export default function LogsPanel() {
-  const { rows, loading, loaded, error, loadLogs } = useLogs();
+function formatLogTime(row) {
+  if (row._timestamp_is_receive) return `Received ${new Date(row.timestamp_ms).toLocaleString()}`;
+  if (row.timestamp_ms) return new Date(row.timestamp_ms).toLocaleString();
+  if (row.hardware_uptime_ms != null) return `Uptime ${(row.hardware_uptime_ms / 1000).toFixed(0)}s`;
+  return 'Timestamp unavailable';
+}
 
-  useEffect(() => {
-    loadLogs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+export default function LogsPanel({ live, connection }) {
+  const { rows, loading, loaded, error } = useLogs();
 
-  const displayRows = rows.slice().reverse();
+  const liveTimestamp = Number(live?.timestamp_ms) > 0
+    ? (Number(live.timestamp_ms) < 1e12 ? Number(live.timestamp_ms) * 1000 : Number(live.timestamp_ms))
+    : live?._received_at_ms;
+  const liveRow = live
+    ? { ...live, timestamp_ms: liveTimestamp, _timestamp_is_receive: !(Number(live.timestamp_ms) > 0) }
+    : null;
+  const chartRows = liveRow ? [...rows, liveRow] : rows;
+  const displayRows = liveRow ? [liveRow, ...rows.slice().reverse()] : rows.slice().reverse();
 
   return (
     <>
       <div className="card">
-        <div className="section-title">Recent Trend (last 50 logged readings)</div>
+        <div className="section-title">Sensor Trends</div>
+        <div className="chart-meta">ESP32 {connection === 'online' ? 'live' : connection} · current reading included · hover a point for exact values</div>
         <div className="legend">
           <span>
             <i style={{ background: '#4f8ef7' }} />
@@ -35,7 +44,7 @@ export default function LogsPanel() {
         ) : error ? (
           <div className="empty-note">Unable to load log history. Check the database deployment and sign-in.</div>
         ) : (
-          <TrendChart rows={rows} />
+          <TrendChart rows={chartRows} />
         )}
       </div>
 
@@ -69,9 +78,9 @@ export default function LogsPanel() {
               ) : (
                 displayRows.map((r, i) => (
                   <tr key={i}>
-                    <td>{new Date(r.timestamp_ms).toLocaleString()}</td>
-                    <td>{(r.temperature_c ?? 0).toFixed(1)}</td>
-                    <td>{(r.ph ?? 0).toFixed(2)}</td>
+                    <td>{r === liveRow ? 'LIVE · ' : ''}{formatLogTime(r)}</td>
+                    <td>{Number(r.temperature_c ?? 0).toFixed(1)}</td>
+                    <td>{Number(r.ph ?? 0).toFixed(2)}</td>
                     <td>{r.turbidity_adc ?? '--'}</td>
                     <td>{r.water_state ?? '--'}</td>
                     <td>

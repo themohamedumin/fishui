@@ -443,6 +443,36 @@ td {
   gap: 6px;
 }
 
+.chart-meta {
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  margin: 2px 0 8px;
+}
+
+.trend-chart {
+  width: 100%;
+  overflow: hidden;
+}
+
+.trend-chart svg {
+  display: block;
+  width: 100%;
+  height: 280px;
+}
+
+.chart-grid {
+  stroke: var(--stroke-soft);
+  stroke-dasharray: 3 5;
+}
+
+.chart-scale,
+.chart-time {
+  fill: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
 .legend i {
   width: 10px;
   height: 3px;

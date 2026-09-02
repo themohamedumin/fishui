@@ -29,7 +29,7 @@ export default function Dashboard() {
 
         {tab === 'overview' && <OverviewPanel live={live} thresholds={thresholds} control={control} updatePump={updatePump} />}
         {tab === 'feeder' && <FeederPanel live={live || {}} />}
-        {tab === 'logs' && <LogsPanel />}
+        {tab === 'logs' && <LogsPanel live={live} connection={connection} />}
         {tab === 'settings' && <SettingsPanel />}
       </main>
 
