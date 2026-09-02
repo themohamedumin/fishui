@@ -4,9 +4,9 @@
  */
 export function calculatePhStatus(phValue, thresholds) {
   if (!thresholds || phValue == null) return null;
-  
+
   const { ph_acidic, ph_basic } = thresholds;
-  
+
   // pH is OK if it's between the acidic and basic bounds
   if (phValue >= ph_acidic && phValue <= ph_basic) {
     return 'OK';
@@ -14,13 +14,32 @@ export function calculatePhStatus(phValue, thresholds) {
   return 'NOT_OK';
 }
 
+export const TURBIDITY_CLEAN_MAX = 2048;
+export const TURBIDITY_CAUTION_MAX = 3072;
+
 /**
- * Calculate turbidity status based on ADC value and threshold
- * Clean if below turbidity_dirty_adc, Dirty if above
+ * Convert raw ADC turbidity to impurity % using the sensor's actual direction:
+ * higher ADC => dirtier water, with 4095 as the full-scale maximum.
  */
-export function calculateTurbidityStatus(turbidityAdc, thresholds) {
-  if (!thresholds || turbidityAdc == null) return null;
-  
-  const { turbidity_dirty_adc } = thresholds;
-  return turbidityAdc < turbidity_dirty_adc ? 'CLEAN' : 'DIRTY';
+export function calculateTurbidityImpurityPercent(turbidityAdc) {
+  if (turbidityAdc == null) return 0;
+
+  const adc = Math.min(Math.max(Number(turbidityAdc), 0), 4095);
+  return Math.round((adc / 4095) * 100);
+}
+
+/**
+ * Match the ESP32 firmware threshold logic:
+ * ADC <= 2048 => CLEAN
+ * 2048 < ADC <= 3072 => CAUTION
+ * ADC > 3072 => DANGER
+ */
+export function calculateTurbidityStatus(turbidityAdc) {
+  if (turbidityAdc == null) return null;
+
+  const adc = Number(turbidityAdc);
+
+  if (adc <= TURBIDITY_CLEAN_MAX) return 'CLEAN';
+  if (adc <= TURBIDITY_CAUTION_MAX) return 'CAUTION';
+  return 'DANGER';
 }

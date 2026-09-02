@@ -1,9 +1,24 @@
 import MetricCard from './MetricCard';
 import { StatusBanner, StatusRow } from './StatusPieces';
-import { calculatePhStatus, calculateTurbidityStatus } from '../utils/statusCalculators';
+import {
+  calculatePhStatus,
+  calculateTurbidityImpurityPercent,
+  calculateTurbidityStatus,
+} from '../utils/statusCalculators';
 
 const phBadge = (s) => (s === 'OK' ? 'SAFE' : 'DANGER');
-const turbBadge = (s) => (s === 'CLEAN' ? 'SAFE' : 'DANGER');
+const turbBadge = (s) => {
+  switch (s) {
+    case 'CLEAN':
+      return 'SAFE';
+    case 'CAUTION':
+      return 'CAUTION';
+    case 'DANGER':
+      return 'DANGER';
+    default:
+      return 'SAFE';
+  }
+};
 
 const formatTime = (ms) => {
   const d = ms ? new Date(ms) : new Date();
@@ -21,12 +36,14 @@ export default function OverviewPanel({ live, thresholds }) {
   }
 
   const cooling = live.aerator_state === 'COOLING';
-  const clarityPct = Math.round(((live.turbidity_adc ?? 0) / 4095) * 100);
+  const impurityPct = calculateTurbidityImpurityPercent(live.turbidity_adc);
   const wifiConnected = live.wifi_rssi != null && live.wifi_rssi > -100;
-  
-  // Calculate proper pH status based on thresholds, with fallback to backend value
+
+  // Statuses are derived from the actual raw ADC, matching the ESP32 firmware logic.
+  // The overall pond_status remains a separate backend value and may be DANGER for
+  // reasons other than turbidity (pH, timeout, etc.).
   const phStatus = thresholds ? calculatePhStatus(live.ph, thresholds) : live.ph_status;
-  const turbidityStatus = thresholds ? calculateTurbidityStatus(live.turbidity_adc, thresholds) : live.turbidity_status;
+  const turbidityStatus = calculateTurbidityStatus(live.turbidity_adc, thresholds);
 
   return (
     <>
@@ -49,10 +66,10 @@ export default function OverviewPanel({ live, thresholds }) {
         />
         <MetricCard
           label="Water Clarity"
-          value={clarityPct}
+          value={impurityPct}
           unit="% impurity"
           badge={turbBadge(turbidityStatus)}
-          riskPct={clarityPct}
+          riskPct={impurityPct}
           foot={`Raw sensor: ${live.turbidity_adc ?? '--'} ADC`}
         />
       </div>
