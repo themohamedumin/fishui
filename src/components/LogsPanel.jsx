@@ -3,7 +3,7 @@ import { useLogs } from '../hooks/useLogs';
 import TrendChart from './TrendChart';
 
 export default function LogsPanel() {
-  const { rows, loading, loaded, loadLogs } = useLogs();
+  const { rows, loading, loaded, error, loadLogs } = useLogs();
 
   useEffect(() => {
     loadLogs();
@@ -30,7 +30,13 @@ export default function LogsPanel() {
             Turbidity (ADC)
           </span>
         </div>
-        {loading && !loaded ? <div className="empty-note">Loading log history…</div> : <TrendChart rows={rows} />}
+        {loading && !loaded ? (
+          <div className="empty-note">Loading log history…</div>
+        ) : error ? (
+          <div className="empty-note">Unable to load log history. Check the database deployment and sign-in.</div>
+        ) : (
+          <TrendChart rows={rows} />
+        )}
       </div>
 
       <div className="card">

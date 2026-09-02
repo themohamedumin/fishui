@@ -6,9 +6,11 @@ export function useLogs() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(null);
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const logsRef = query(ref(db, `smart_fish_pond/${DEVICE_ID}/logs`), limitToLast(50));
       const snap = await get(logsRef);
@@ -16,10 +18,14 @@ export function useLogs() {
       snap.forEach((child) => out.push(child.val()));
       setRows(out);
       setLoaded(true);
+    } catch (error) {
+      setRows([]);
+      setLoaded(true);
+      setError(error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { rows, loading, loaded, loadLogs };
+  return { rows, loading, loaded, error, loadLogs };
 }
