@@ -450,6 +450,15 @@ td {
   margin: 2px 0 8px;
 }
 
+.section-kicker {
+  color: var(--mint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  margin-left: 8px;
+  text-transform: uppercase;
+}
+
 .trend-chart {
   width: 100%;
   overflow: hidden;

@@ -36,7 +36,8 @@ export function useLogs() {
         out.push({
           ...value,
           timestamp_ms: Number.isFinite(timestamp) && timestamp > 0 ? timestamp : null,
-          hardware_uptime_ms: pushTimestamp ? null : valueTimestamp >= 0 && valueTimestamp < 1e12 ? valueTimestamp : null,
+          timestamp_source: valueTimestamp > 0 ? 'hardware' : pushTimestamp ? 'firebase' : 'unavailable',
+          hardware_uptime_ms: !pushTimestamp && valueTimestamp >= 0 && valueTimestamp < 1e12 ? valueTimestamp : null,
         });
       });
       setRows(out);
