@@ -4,6 +4,41 @@ import { db, DEVICE_ID } from '../firebase';
 
 const OFFLINE_TIMEOUT_MS = 12000;
 
+export function useControlState() {
+  const [control, setControl] = useState({});
+
+  useEffect(() => {
+    const controlRef = ref(db, `smart_fish_pond/${DEVICE_ID}/control`);
+    const unsub = onValue(controlRef, (snap) => setControl(snap.val() || {}));
+
+    return () => {
+      unsub();
+      off(controlRef);
+    };
+  }, []);
+
+  const updatePump = async (pumpKey, nextValue) => {
+    const controlRef = ref(db, `smart_fish_pond/${DEVICE_ID}/control`);
+    const previousState = { ...control };
+    const otherPumpKey = pumpKey === 'fill_pump' ? 'drain_pump' : 'fill_pump';
+
+    const payload = { [pumpKey]: nextValue };
+    if (nextValue && !!previousState[otherPumpKey]) {
+      payload[otherPumpKey] = false;
+    }
+
+    try {
+      await update(controlRef, payload);
+      return true;
+    } catch (error) {
+      await update(controlRef, previousState);
+      throw error;
+    }
+  };
+
+  return { control, updatePump };
+}
+
 export function useLiveData() {
   const [live, setLive] = useState(null);
   const [connection, setConnection] = useState('waiting'); // waiting | online | offline | denied

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useLiveData, useThresholds } from '../hooks/usePondData';
+import { useControlState, useLiveData, useThresholds } from '../hooks/usePondData';
 import TopBar from '../components/TopBar';
 import { SideNav, BottomNav, TABS } from '../components/Nav';
 import OverviewPanel from '../components/OverviewPanel';
@@ -13,6 +13,7 @@ import '../styles/components.css';
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const { live, connection } = useLiveData();
+  const { control, updatePump } = useControlState();
   const { thresholds } = useThresholds();
   const [tab, setTab] = useState('overview');
 
@@ -26,7 +27,7 @@ export default function Dashboard() {
       <main className="main">
         <h1 className="page-title">{title}</h1>
 
-        {tab === 'overview' && <OverviewPanel live={live} thresholds={thresholds} />}
+        {tab === 'overview' && <OverviewPanel live={live} thresholds={thresholds} control={control} updatePump={updatePump} />}
         {tab === 'feeder' && <FeederPanel live={live || {}} />}
         {tab === 'logs' && <LogsPanel />}
         {tab === 'settings' && <SettingsPanel />}

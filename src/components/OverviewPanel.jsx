@@ -1,4 +1,5 @@
 import MetricCard from './MetricCard';
+import WaterLevelPanel from './WaterLevelPanel';
 import { StatusBanner, StatusRow } from './StatusPieces';
 import {
   calculatePhStatus,
@@ -25,7 +26,7 @@ const formatTime = (ms) => {
   return d.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' });
 };
 
-export default function OverviewPanel({ live, thresholds }) {
+export default function OverviewPanel({ live, thresholds, control, updatePump }) {
   if (!live) {
     return (
       <>
@@ -73,6 +74,12 @@ export default function OverviewPanel({ live, thresholds }) {
           foot={`Raw sensor: ${live.turbidity_adc ?? '--'} ADC`}
         />
       </div>
+
+      <WaterLevelPanel
+        live={live}
+        control={control || {}}
+        updatePump={updatePump}
+      />
 
       <div className="card">
         <div className="section-title">System Status</div>
